@@ -32,10 +32,16 @@ map_tfw = worldfileread('NE1_LR_LC_SR_W_DR.tfw');
 figure
 mapshow(map_tif, map_tfw);
 hold on
-[alpha,delta,lambda,phi] = groundtrack(R_geo,omega_planet,t);
-plot(lambda,phi,'k.')
+[alpha,delta,lambda,phi,index] = groundtrack(R_geo,omega_planet,t);
+n_index = length(index);
+plot(lambda(1:index(1)),phi(1:index(1)),'k')
+
+for i = 2:n_index
+plot(lambda((index(i-1)+1):index(i)),phi((index(i-1)+1):index(i)),'k')
+end
+plot(lambda(index(end)+1:end),phi(index(end)+1:end),'k');
 plot(lambda(1),phi(1),'b.','MarkerSize',20)
 plot(lambda(end),phi(end),'r.','MarkerSize',20)
 
-
+hold off
 
