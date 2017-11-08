@@ -38,15 +38,7 @@ for i = 2:N
         index = [index,i-1];
     end
 end
-% index = sort(index);
 
-% for i = 1:length(index)
-%     if index(i) == 0
-%        
-%        index(i) = [];
-%     end
-% end
-    
     
     
     
