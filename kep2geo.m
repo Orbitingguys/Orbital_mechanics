@@ -15,7 +15,7 @@ p = a*(1-ecc^2);
 % norm_h = sqrt(p*mi);
 norm_r = p./(1+ecc*cos(theta));
 r_pf = norm_r.*[cos(theta); sin(theta); 0];
-[R] = geo2perif_rot(RAAN,PA,INCLI);
+[R] = geo2perif_rot(INCLI, RAAN, PA);
 r_geo = R' * r_pf;
 v_solidal = sqrt(mi/p).*[ecc*sin(theta) 1+ecc*cos(theta) 0];
 
