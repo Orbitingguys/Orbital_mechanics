@@ -5,7 +5,7 @@ function [Local_min_D_v,Total_min_D_v,ERROR] = pork_chopFORWHILE(orbital_paramet
 % TimeOption     .TypeMission:      -   if .TypeMission is 1 it means that you have a window of
 %                                       launch so you need to define .t_i_max and also you have a
 %                                       request for the arrival time which add a constrain that
-%                                       has to be saved in matlab as .t_f_max
+%                                       has to be saved in matlab as .t_f_min,.t_f_max
 %
 %                                   -   if .TypeMission is 2 you still have the launch window
 %                                       but you don't deserve a constrain for the arrival time.
@@ -15,11 +15,11 @@ function [Local_min_D_v,Total_min_D_v,ERROR] = pork_chopFORWHILE(orbital_paramet
 %
 %                                   -   if .TypeMission is 4 you haven't any time constrain;
 %   
-%                .t_i_max:          -   Must be added for .TypeMission equal to 1 or 2           
+%                .t_i_min, t_i_max: -   Must be added for .TypeMission equal to 1 or 2           
 %                                       for the other cases will be computed as the period of the
 %                                       first orbit
 %                                       
-%                .t_f_max:          -   Must be added for .TypeMission equal to 1 or 3           
+%                .t_f_min, t_f_max: -   Must be added for .TypeMission equal to 1 or 3           
 %                                       for the other cases will be computed as 3 times of the period 
 %                                       of the second orbit 
 %
@@ -30,7 +30,6 @@ tic
 %% TIME SETS
 
 t_i_min = 0.001;                 % different from zero but close in order to prevent computing errors
-t_f_min = 0.001;                 % It's impossible to reach the second orbit in the very same time as the departure but impossible cases will neglected by the script
 a_1 = orbital_parameters_1.a;
 a_2 = orbital_parameters_2.a;
 T_1 = 2*pi*sqrt(a_1^3/mi);    % period of the first orbit
@@ -43,45 +42,71 @@ switch TimeOption.TypeMission
     case 1
         
         t_i_max = TimeOption.t_i_max;
+        t_f_min = TimeOption.t_f_min;
         t_f_max = TimeOption.t_f_max;
         
     case 2
-        
+
         t_i_max = TimeOption.t_i_max;
+        t_f_min = 0.001;                 % It's impossible to reach the second orbit in the very same time as the departure but impossible cases will neglected by the script
         t_f_max = 3*T_2;
         
     case 3
-        
+
         t_i_max = T_1;
+        t_f_min = TimeOption.t_f_min;
         t_f_max = TimeOption.t_f_max;
         
     case 4
-        
-       t_i_max = T_1;
-       t_f_max = 3*T_2; 
+       
+        t_i_max = T_1;
+        t_f_min = 0.001;                 % It's impossible to reach the second orbit in the very same time as the departure but impossible cases will neglected by the script
+        t_f_max = 3*T_2; 
        
 end
     
  
 %% ODE SETS
 
+m = 200;      % number of steps in which the departure time will be discretized
+n = 200;      % number of steps in which the arrival time will be discretized
+
 [r_geo_1_0,v_geo_1_0] = kep2geo (orbital_parameters_1,mi);
 [r_geo_2_0,v_geo_2_0] = kep2geo (orbital_parameters_2,mi);
 options = odeset('Reltol',1e-13,'Abstol',1e-14);
+
 X_1_0 = [r_geo_1_0;v_geo_1_0];
 X_2_0 = [r_geo_2_0;v_geo_2_0];
+[~,X_1_first] = ode113(@orbit_dynamics,linspace(t_i_min,T_1,m),X_1_0,options,mi); % integration along the whole time for the departure orbit
+[~,X_2_first] = ode113(@orbit_dynamics,linspace(0.001,T_2,n),X_2_0,options,mi); % integration along the whole time for the arrival orbit
+
+switch TimeOption.TypeMission
+    
+    
+    case 1
+
+    [~,X_2] = ode113(@orbit_dynamics,[0 t_f_min],X_2_0,options,mi); % integration along the setted time for the arrival orbit
+    X_2_0 = X_2(end,:);
+    
+    case 2
+        %start   
+    case 3
+       [~,X_2] = ode113(@orbit_dynamics,[0 t_f_min],X_2_0,options,mi);
+       X_2_0 = X_2(end,:);
+    case 4
+       
+
+       
+end
+
 
 %% FIRST PORK CHOP CYCLE
 
-    m = 200;      % number of steps in which the departure time will be discretized
-    n = 200;      % number of steps in which the arrival time will be discretized
     
     % dynamic equation integration
     
     [t_i,X_1] = ode113(@orbit_dynamics,linspace(t_i_min,t_i_max,m),X_1_0,options,mi); % integration along the setted time for the departure orbit 
     [t_f,X_2] = ode113(@orbit_dynamics,linspace(t_f_min,t_f_max,n),X_2_0,options,mi); % integration along the setted time for the arrival orbit 
-    [~,X_1_first] = ode113(@orbit_dynamics,linspace(t_i_min,T_1,m),X_1_0,options,mi); % integration along the whole time for the departure orbit
-    [~,X_2_first] = ode113(@orbit_dynamics,linspace(t_f_min,T_2,n),X_2_0,options,mi); % integration along the whole time for the arrival orbit
      
     
     D_v = zeros(m,n); % pre-allocation of the memory
@@ -119,7 +144,7 @@ zlabel('Delta_v')
 % contour plot
 
 figure                                      
-contour(t_f,t_i,D_v,m);
+contour(t_i,t_f,D_v',m);
 title('Pork Chop Contour','FontSize',13)
 xlabel('arrival time')
 ylabel('departure time')

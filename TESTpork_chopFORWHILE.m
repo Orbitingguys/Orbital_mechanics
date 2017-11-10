@@ -43,6 +43,10 @@ orbital_parameters_2.theta = degtorad(2.538807159694742E+02);
 % t_d=linspace(0,200*24*3600,100);
 % t_a=linspace(150*24*3600,400*24*3600,100);
 
-TimeOption.TypeMission = 4;
+TimeOption.t_i_max=200*24*3600;
+TimeOption.t_f_min=150*24*3600;
+TimeOption.t_f_max=400*24*3600;
+TimeOption.TypeMission = 1;
+
 [Local_min_D_v,Total_min_D_v,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi);
 
