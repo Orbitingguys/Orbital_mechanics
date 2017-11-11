@@ -15,13 +15,16 @@ function [Local_min_D_v,Total_min_D_v,ERROR] = pork_chopFORWHILE(orbital_paramet
 %
 %                                   -   if .TypeMission is 4 you haven't any time constrain;
 %   
-%                .t_i_min, t_i_max: -   Must be added for .TypeMission equal to 1 or 2           
+%                .t_i_max:          -   Must be added for .TypeMission equal to 1 or 2           
 %                                       for the other cases will be computed as the period of the
 %                                       first orbit
 %                                       
 %                .t_f_min, t_f_max: -   Must be added for .TypeMission equal to 1 or 3           
 %                                       for the other cases will be computed as 3 times of the period 
 %                                       of the second orbit 
+%
+%                The initial time at the departure orbit is automatically
+%                computed as zero
 %
 %                WHEN A TIME IS NOT NEEDED JUST DON'T ADD IT AS A DATA!                
 
@@ -32,8 +35,8 @@ tic
 t_i_min = 0.001;                 % different from zero but close in order to prevent computing errors
 a_1 = orbital_parameters_1.a;
 a_2 = orbital_parameters_2.a;
-T_1 = 2*pi*sqrt(a_1^3/mi);    % period of the first orbit
-T_2 = 2*pi*sqrt(a_2^3/mi);    % period of the second orbit
+T_1 = 2*pi*sqrt(a_1^3/mi);       % period of the first orbit
+T_2 = 2*pi*sqrt(a_2^3/mi);       % period of the second orbit
 
 
 switch TimeOption.TypeMission
@@ -68,35 +71,40 @@ end
  
 %% ODE SETS
 
-m = 200;      % number of steps in which the departure time will be discretized
-n = 200;      % number of steps in which the arrival time will be discretized
+m = 200;                                                    % number of steps in which the departure time will be discretized
+n = 200;                                                    % number of steps in which the arrival time will be discretized
 
 [r_geo_1_0,v_geo_1_0] = kep2geo (orbital_parameters_1,mi);
 [r_geo_2_0,v_geo_2_0] = kep2geo (orbital_parameters_2,mi);
-options = odeset('Reltol',1e-13,'Abstol',1e-14);
+options = odeset('Reltol',1e-13,'Abstol',1e-14);            % option set for the ODE integration
 
-X_1_0 = [r_geo_1_0;v_geo_1_0];
-X_2_0 = [r_geo_2_0;v_geo_2_0];
+X_1_0 = [r_geo_1_0;v_geo_1_0];                              % starting condition for the ODE integration @ departure orbit (at t=0 [s])
+X_2_0 = [r_geo_2_0;v_geo_2_0];                              % starting condition for the ODE integration @ arrival orbit (at t=0 [s])
+
 [~,X_1_first] = ode113(@orbit_dynamics,linspace(t_i_min,T_1,m),X_1_0,options,mi); % integration along the whole time for the departure orbit
-[~,X_2_first] = ode113(@orbit_dynamics,linspace(0.001,T_2,n),X_2_0,options,mi); % integration along the whole time for the arrival orbit
+[~,X_2_first] = ode113(@orbit_dynamics,linspace(0.001,T_2,n),X_2_0,options,mi);   % integration along the whole time for the arrival orbit
+
 
 switch TimeOption.TypeMission
     
-    
     case 1
-
-    [~,X_2] = ode113(@orbit_dynamics,[0 t_f_min],X_2_0,options,mi); % integration along the setted time for the arrival orbit
-    X_2_0 = X_2(end,:);
+        
+        [~,X_2] = ode113(@orbit_dynamics,[0 t_f_min],X_2_0,options,mi); % integration needed in order to obtain the radius of the condition related to t_f_min in the arrival orbit
+        X_2_0 = X_2(end,:);                                             % radius and velocity at the time t_f_min @ the arrival orbit
     
     case 2
-        %start   
+        
+                                                                        % start conditions are fine as saved before   
+        
     case 3
-       [~,X_2] = ode113(@orbit_dynamics,[0 t_f_min],X_2_0,options,mi);
-       X_2_0 = X_2(end,:);
+        
+        [~,X_2] = ode113(@orbit_dynamics,[0 t_f_min],X_2_0,options,mi); % integration needed in order to obtain the radius of the condition related to t_f_min in the arrival orbit
+        X_2_0 = X_2(end,:);                                             % radius and velocity at the time t_f_min @ the arrival orbit
+        
     case 4
-       
-
-       
+        
+                                                                        % start conditions are fine as saved before
+  
 end
 
 
@@ -209,17 +217,17 @@ for z = 1:n       % for cycle for every element of the minimum vector of the mat
    
 end
 
-[Total_min_D_v,f] = min(Local_min_D_v); % Computing the global minimum!
+[Total_min_D_v,f] = min(Local_min_D_v); % Computing the global minimum! the minimum position is the f-th
 
 %% PRINTING INTERESTING VALUES
 
 fprintf('\n\n')
 fprintf('BEST DELTA_V: %g [km/s] \n\n\n',Total_min_D_v)
-fprintf('DEPARTURE RADIUS:\n\n')
+fprintf('DEPARTURE RADIUS @ transfer orbit:\n\n')
 fprintf('x: %g [km] \n',R_d(1,f))
 fprintf('y: %g [km] \n',R_d(2,f))
 fprintf('z: %g [km] \n\n\n',R_d(3,f))
-fprintf('ARRIVAL RADIUS:\n\n')
+fprintf('ARRIVAL RADIUS @transfer orbit:\n\n')
 fprintf('x: %g [km] \n',R_a(1,f))
 fprintf('y: %g [km] \n',R_a(2,f))
 fprintf('z: %g [km] \n\n\n',R_a(3,f))
@@ -238,10 +246,11 @@ fprintf('z: %g [km/s] \n\n\n',V_a(3,f))
 fprintf('ARRIVAL VELOCITY @transfer orbit:\n\n')
 fprintf('x: %g [km/s] \n',v_transf_a(1,f))
 fprintf('y: %g [km/s] \n',v_transf_a(2,f))
-fprintf('z: %g [km/s] \n',v_transf_a(3,f))
+fprintf('z: %g [km/s] \n\n\n',v_transf_a(3,f))
 
 
 %% ORBIT REPRESENTATION (geo coordinate plot)
+
 [orbital_parameters_transf] = geo2kep(R_d(:,f),v_transf_d(:,f),mi);
 a_transf = orbital_parameters_transf.a;
 T_transf = 2*pi*sqrt(a_transf^3/mi); 
@@ -257,15 +266,18 @@ stop = plot3(X_2_first(end,1),X_2_first(end,2),X_2_first(end,3),'o','MarkerEdgeC
 trasf = plot3(X_transf(:,1),X_transf(:,2),X_transf(:,3),'y');
 departure = plot3(X_1_first(:,1),X_1_first(:,2),X_1_first(:,3),'g');
 arrival = plot3(X_2_first(:,1),X_2_first(:,2),X_2_first(:,3),'r');
+manouvre_1 = plot3(R_d(1,f),R_d(2,f),R_d(3,f),'o','MarkerEdgeColor','none','MarkerFaceColor','blue','MarkerSize',8);
+manouvre_2 = plot3(R_a(1,f),R_a(2,f),R_a(3,f),'o','MarkerEdgeColor','none','MarkerFaceColor','y','MarkerSize',8);
 xlabel('x')
 ylabel('y')
 zlabel('z')
 title('Orbit Representation','FontSize',13)
-legend([trasf,departure,arrival,start,stop],{'transfer orbit','departure orbit','arrival orbit','start position for the departure orbit', ...
-    'start position for the arrival orbit'})
+legend([trasf,departure,arrival,start,stop,manouvre_1,manouvre_2],{'transfer orbit','departure orbit','arrival orbit','start position for the departure orbit', ...
+    'start position for the arrival orbit','first maneouvre point','second maneouvre point'})
 
 
 hold off
 
 
-toc  
+elapsed_time = toc;  
+fprintf('ELAPSED TIME: %g [s]\n\n\n',elapsed_time)
