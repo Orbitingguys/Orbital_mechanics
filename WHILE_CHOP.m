@@ -1,4 +1,4 @@
-function [Local_min_D_V,R_d,R_a,V_d,V_a,v_transf_d,v_transf_a,ERROR] = WHILE_CHOP(t_i_min,t_i_max,t_f_min,t_f_max,m,n,mi,X_1_0,X_2_0,options)  
+function [Local_min_D_V,R_maneouvre_1,R_maneouvre_2,V_maneouvre_1,V_maneouvre_2,v_transf_d,v_transf_a,t_maneouvre_1,t_maneouvre_2,ERROR] = WHILE_CHOP(t_i_min,t_i_max,t_f_min,t_f_max,m,n,mi,X_1_0,X_2_0,options)  
 
 %% values for starting the while cycle
 
@@ -107,9 +107,10 @@ end
 Local_min_D_V = New_min_D_v;           % Local computed minimum
 v_transf_d = v_transf_1(:,k,i(j),j);   % Velocity vector in the transfer orbit for the local minimum conditions at the last iteration in the intersection whit the departure orbit
 v_transf_a = v_transf_2(:,k,i(j),j);   % Velocity vector in the transfer orbit for the local minimum conditions at the last iteration in the intersection whit the arrival orbit
-R_d = X_1(i(j),1:3);                   % Radius of the first intersection for the local minimum conditions
-V_d = X_1(i(j),4:6);                   % Velocity vector in the departure orbit for the local minimum conditions at the last iteration
-R_a = X_2(j,1:3);                      % Radius of the second intersection for the local minimum conditions
-V_a = X_2(j,4:6);                      % Velocity vector in the arrival orbit for the local minimum conditions at the last iteration
-
+R_maneouvre_1 = X_1(i(j),1:3);         % Radius of the first intersection for the local minimum conditions
+V_maneouvre_1 = X_1(i(j),4:6);         % Velocity vector in the departure orbit for the local minimum conditions at the last iteration
+R_maneouvre_2 = X_2(j,1:3);            % Radius of the second intersection for the local minimum conditions
+V_maneouvre_2 = X_2(j,4:6);            % Velocity vector in the arrival orbit for the local minimum conditions at the last iteration
+t_maneouvre_1 = t_i(i(j));
+t_maneouvre_2 = t_f(j);
 end
