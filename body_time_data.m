@@ -109,7 +109,7 @@ DateOption.date_d_min = date_d_min(:,jbody)';
 DateOption.date_d_max = date_d_max(:,jbody)';
 DateOption.date_a_min = date_a_min(:,jbody)';
 DateOption.date_a_max = date_a_max(:,jbody)';
-DateOption.TypeMission = 4; %The function defines all limits for dates
+DateOption.TypeMission = 1; %The function defines all limits for dates
 
 
 
