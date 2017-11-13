@@ -1,4 +1,4 @@
-function [Local_min_D_v,Total_min_D_v,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi)
+function [printed_value,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi)
 
 
 
@@ -80,9 +80,11 @@ options = odeset('Reltol',1e-13,'Abstol',1e-14);            % option set for the
 
 X_1_0 = [r_geo_1_0;v_geo_1_0];                              % starting condition for the ODE integration @ departure orbit (at t=0 [s])
 X_2_0 = [r_geo_2_0;v_geo_2_0];                              % starting condition for the ODE integration @ arrival orbit (at t=0 [s])
+X_0_departure = X_1_0;                                      % in order to be used later
+X_0_arrival = X_2_0;                                        % in order to be used later
 
-[~,X_1_first] = ode113(@orbit_dynamics,linspace(t_i_min,T_1,m),X_1_0,options,mi); % integration along the whole time for the departure orbit
-[~,X_2_first] = ode113(@orbit_dynamics,linspace(0.001,T_2,n),X_2_0,options,mi);   % integration along the whole time for the arrival orbit
+[~,X_departure_orbit] = ode113(@orbit_dynamics,linspace(t_i_min,T_1,m),X_1_0,options,mi); % integration along the whole time for the departure orbit
+[~,X_arrival_orbit] = ode113(@orbit_dynamics,linspace(0.001,T_2,n),X_2_0,options,mi);     % integration along the whole time for the arrival orbit
 
 
 switch TimeOption.TypeMission
@@ -166,12 +168,14 @@ ylabel('departure time')
 
 Local_min_D_v = zeros(n,1);
 ERROR = zeros(100,n);
-R_d = zeros(3,n);
-R_a = zeros(3,n);
-V_d = zeros(3,n);
-V_a = zeros(3,n);
-v_transf_d = zeros(3,n);
-v_transf_a = zeros(3,n);
+R_maneouvre_1 = zeros(3,n);
+R_maneouvre_2 = zeros(3,n);
+V_maneouvre_1 = zeros(3,n);
+V_maneouvre_2 = zeros(3,n);
+v_transf_man_1 = zeros(3,n);
+v_transf_man_2 = zeros(3,n);
+t_maneouvre_1 = zeros(1,n); 
+t_maneouvre_2 = zeros(1,n); 
 
 [~,h] = min(D_v); % [minimum,index] = min(matrix) gives us a vector (minimum) which has in the k-th position the minimum of the ... 
                   % ... k-th matrix column and index is the vector in which presents the raw of the matrix for every minimum 
@@ -208,73 +212,119 @@ for z = 1:n       % for cycle for every element of the minimum vector of the mat
     else
         t_f_max = t_f(end);
     end
-    
-    [Local_min_D_v(z),R_d(:,z),R_a(:,z),V_d(:,z),V_a(:,z),v_transf_d(:,z),v_transf_a(:,z),err] = WHILE_CHOP(t_i_min,t_i_max,t_f_min,t_f_max,round(m/8),round(n/8),mi,X_1_0,X_2_0,options);
+   
+    [Local_min_D_v(z),R_maneouvre_1(:,z),R_maneouvre_2(:,z),V_maneouvre_1(:,z),V_maneouvre_2(:,z),v_transf_man_1(:,z),v_transf_man_2(:,z),t_maneouvre_1(z),t_maneouvre_2(z),err] = WHILE_CHOP(t_i_min,t_i_max,t_f_min,t_f_max,round(m/8),round(n/8),mi,X_1_0,X_2_0,options);
     
     ERROR(:,z) = err; % assembling the error matrix
     
-    
-   
 end
 
 [Total_min_D_v,f] = min(Local_min_D_v); % Computing the global minimum! the minimum position is the f-th
+
+[~,X_dep_t02Tman2] = ode113(@orbit_dynamics,linspace(0,t_maneouvre_2(f),10),X_0_departure,options,mi); % in order to obtain the position of the planet 1 @maneouvre time 2
+[~,X_arr_t02Tman1] = ode113(@orbit_dynamics,linspace(0,t_maneouvre_1(f),10),X_0_arrival,options,mi);   % in order to obtain the position of the planet 2 @maneouvre time 1
 
 %% PRINTING INTERESTING VALUES
 
 fprintf('\n\n')
 fprintf('BEST DELTA_V: %g [km/s] \n\n\n',Total_min_D_v)
-fprintf('DEPARTURE RADIUS @ transfer orbit:\n\n')
-fprintf('x: %g [km] \n',R_d(1,f))
-fprintf('y: %g [km] \n',R_d(2,f))
-fprintf('z: %g [km] \n\n\n',R_d(3,f))
-fprintf('ARRIVAL RADIUS @transfer orbit:\n\n')
-fprintf('x: %g [km] \n',R_a(1,f))
-fprintf('y: %g [km] \n',R_a(2,f))
-fprintf('z: %g [km] \n\n\n',R_a(3,f))
+fprintf('DEPARTURE RADIUS @departure orbit:\n\n')
+fprintf('x: %g [km] \n',X_departure_orbit(1,1))
+fprintf('y: %g [km] \n',X_departure_orbit(1,2))
+fprintf('z: %g [km] \n\n\n',X_departure_orbit(1,3))
+fprintf('ARRIVAL RADIUS @arrival orbit:\n\n')
+fprintf('x: %g [km] \n',X_arrival_orbit(1,1))
+fprintf('y: %g [km] \n',X_arrival_orbit(1,2))
+fprintf('z: %g [km] \n\n\n',X_arrival_orbit(1,3))
+fprintf('DEPARTURE RADIUS @transfer orbit(first maneouvre point):\n\n')
+fprintf('x: %g [km] \n',R_maneouvre_1(1,f))
+fprintf('y: %g [km] \n',R_maneouvre_1(2,f))
+fprintf('z: %g [km] \n\n\n',R_maneouvre_1(3,f))
+fprintf('ARRIVAL RADIUS @transfer orbit(second maneouvre point):\n\n')
+fprintf('x: %g [km] \n',R_maneouvre_2(1,f))
+fprintf('y: %g [km] \n',R_maneouvre_2(2,f))
+fprintf('z: %g [km] \n\n\n',R_maneouvre_2(3,f))
+fprintf('DEPARTURE RADIUS @second maneouvre point:\n\n')
+fprintf('x: %g [km] \n',X_dep_t02Tman2(end,1))
+fprintf('y: %g [km] \n',X_dep_t02Tman2(end,2))
+fprintf('z: %g [km] \n\n\n',X_dep_t02Tman2(end,3))
+fprintf('ARRIVAL RADIUS @first maneouvre point:\n\n')
+fprintf('x: %g [km] \n',X_arr_t02Tman1(end,1))
+fprintf('y: %g [km] \n',X_arr_t02Tman1(end,2))
+fprintf('z: %g [km] \n\n\n',X_arr_t02Tman1(end,3))
 fprintf('DEPARTURE VELOCITY @departure orbit: \n\n')
-fprintf('x: %g [km/s] \n',V_d(1,f))
-fprintf('y: %g [km/s] \n',V_d(2,f))
-fprintf('z: %g [km/s] \n\n\n',V_d(3,f))
+fprintf('x: %g [km/s] \n',V_maneouvre_1(1,f))
+fprintf('y: %g [km/s] \n',V_maneouvre_1(2,f))
+fprintf('z: %g [km/s] \n\n\n',V_maneouvre_1(3,f))
 fprintf('DEPARTURE VELOCITY @transfer orbit: \n\n')
-fprintf('x: %g [km/s] \n',v_transf_d(1,f))
-fprintf('y: %g [km/s] \n',v_transf_d(2,f))
-fprintf('z: %g [km/s] \n\n\n',v_transf_d(3,f))
+fprintf('x: %g [km/s] \n',v_transf_man_1(1,f))
+fprintf('y: %g [km/s] \n',v_transf_man_1(2,f))
+fprintf('z: %g [km/s] \n\n\n',v_transf_man_1(3,f))
 fprintf('ARRIVAL VELOCITY @arrival orbit:\n\n')
-fprintf('x: %g [km/s] \n',V_a(1,f))
-fprintf('y: %g [km/s] \n',V_a(2,f))
-fprintf('z: %g [km/s] \n\n\n',V_a(3,f))
+fprintf('x: %g [km/s] \n',V_maneouvre_2(1,f))
+fprintf('y: %g [km/s] \n',V_maneouvre_2(2,f))
+fprintf('z: %g [km/s] \n\n\n',V_maneouvre_2(3,f))
 fprintf('ARRIVAL VELOCITY @transfer orbit:\n\n')
-fprintf('x: %g [km/s] \n',v_transf_a(1,f))
-fprintf('y: %g [km/s] \n',v_transf_a(2,f))
-fprintf('z: %g [km/s] \n\n\n',v_transf_a(3,f))
+fprintf('x: %g [km/s] \n',v_transf_man_2(1,f))
+fprintf('y: %g [km/s] \n',v_transf_man_2(2,f))
+fprintf('z: %g [km/s] \n\n\n',v_transf_man_2(3,f))
+fprintf('TIME @first maneouvre point: \n\n')
+fprintf('t: %g [s] \n\n\n',t_maneouvre_1(f))
+fprintf('TIME @second maneouvre point: \n\n')
+fprintf('t: %g [s] \n\n\n',t_maneouvre_2(f))
 
+printed_value.best_Dv = Total_min_D_v;
+printed_value.StartRad_DepOrbit = [X_departure_orbit(1,1),X_departure_orbit(1,2),X_departure_orbit(1,3)];
+printed_value.StartRad_ArrOrbit = [X_arrival_orbit(1,1),X_arrival_orbit(1,2),X_arrival_orbit(1,3)];
+printed_value.RadMan_1 = [R_maneouvre_1(1,f),R_maneouvre_1(2,f),R_maneouvre_1(3,f)];
+printed_value.RadMan_2 = [R_maneouvre_2(1,f),R_maneouvre_2(2,f),R_maneouvre_2(3,f)];
+printed_value.Man2Rad_DepOrbit = [X_dep_t02Tman2(end,1),X_dep_t02Tman2(end,3),X_dep_t02Tman2(end,3)];
+printed_value.Man1Rad_ArrOrbit = [X_arr_t02Tman1(end,1),X_arr_t02Tman1(end,2),X_arr_t02Tman1(end,3)];
+printed_value.VelDepOrbit_Man_1 = [V_maneouvre_1(1,f),V_maneouvre_1(2,f),V_maneouvre_1(3,f)];
+printed_value.VelTransfOrbit_Man_1 = [v_transf_man_1(1,f),v_transf_man_1(3,f),v_transf_man_1(3,f)];
+printed_value.VelArrOrbit_Man_2 = [V_maneouvre_2(1,f),V_maneouvre_2(2,f),V_maneouvre_2(3,f)];
+printed_value.VelTransfOrbit_Man_2 = [v_transf_man_2(1,f),v_transf_man_2(3,f),v_transf_man_2(3,f)];
+printed_value.Time_Man_1 = t_maneouvre_1(f);
+printed_value.Time_Man_2 = t_maneouvre_2(f);
 
 %% ORBIT REPRESENTATION (geo coordinate plot)
 
-[orbital_parameters_transf] = geo2kep(R_d(:,f),v_transf_d(:,f),mi);
+[orbital_parameters_transf] = geo2kep(R_maneouvre_1(:,f),v_transf_man_1(:,f),mi);
 a_transf = orbital_parameters_transf.a;
 T_transf = 2*pi*sqrt(a_transf^3/mi); 
 t_i_min = 0.001;
 t_i_max = T_transf;
-X_transf_0 = [R_d(:,f),v_transf_d(:,f)];
+X_transf_0 = [R_maneouvre_1(:,f),v_transf_man_1(:,f)];
 [~,X_transf] = ode113(@orbit_dynamics,[t_i_min t_i_max],X_transf_0,options,mi);
+
+
 
 figure
 hold on
-start = plot3(X_transf(1,1),X_transf(1,2),X_transf(1,3),'o','MarkerEdgeColor','none','MarkerFaceColor','green','MarkerSize',8);
-stop = plot3(X_2_first(end,1),X_2_first(end,2),X_2_first(end,3),'o','MarkerEdgeColor','none','MarkerFaceColor','red','MarkerSize',8);
-trasf = plot3(X_transf(:,1),X_transf(:,2),X_transf(:,3),'y');
-departure = plot3(X_1_first(:,1),X_1_first(:,2),X_1_first(:,3),'g');
-arrival = plot3(X_2_first(:,1),X_2_first(:,2),X_2_first(:,3),'r');
-manouvre_1 = plot3(R_d(1,f),R_d(2,f),R_d(3,f),'o','MarkerEdgeColor','none','MarkerFaceColor','blue','MarkerSize',8);
-manouvre_2 = plot3(R_a(1,f),R_a(2,f),R_a(3,f),'o','MarkerEdgeColor','none','MarkerFaceColor','y','MarkerSize',8);
+
+StartRad_DepOrbit = plot3(X_departure_orbit(1,1),X_departure_orbit(1,2),X_departure_orbit(1,3),'o','MarkerEdgeColor','none','MarkerFaceColor','green','MarkerSize',8);
+StartRad_ArrOrbit = plot3(X_arrival_orbit(1,1),X_arrival_orbit(1,2),X_arrival_orbit(1,3),'o','MarkerEdgeColor','none','MarkerFaceColor','red','MarkerSize',8);
+transf_orbit = plot3(X_transf(:,1),X_transf(:,2),X_transf(:,3),'y');
+departure_orbit = plot3(X_departure_orbit(:,1),X_departure_orbit(:,2),X_departure_orbit(:,3),'g');
+arrival_orbit = plot3(X_arrival_orbit(:,1),X_arrival_orbit(:,2),X_arrival_orbit(:,3),'r');
+RadMan_1 = plot3(R_maneouvre_1(1,f),R_maneouvre_1(2,f),R_maneouvre_1(3,f),'o','MarkerEdgeColor','none','MarkerFaceColor','blue','MarkerSize',8);
+RadMan_2 = plot3(R_maneouvre_2(1,f),R_maneouvre_2(2,f),R_maneouvre_2(3,f),'o','MarkerEdgeColor','none','MarkerFaceColor','y','MarkerSize',8);
+Man2Rad_DepOrbit = plot3(X_dep_t02Tman2(end,1),X_dep_t02Tman2(end,2),X_dep_t02Tman2(end,3),'o','MarkerEdgeColor','none','MarkerFaceColor','k','MarkerSize',8);
+Man1Rad_ArrOrbit = plot3(X_arr_t02Tman1(end,1),X_arr_t02Tman1(end,2),X_arr_t02Tman1(end,3),'o','MarkerEdgeColor','none','MarkerFaceColor',[0.4,0.1,0.3],'MarkerSize',8);
 xlabel('x')
 ylabel('y')
 zlabel('z')
 title('Orbit Representation','FontSize',13)
-legend([trasf,departure,arrival,start,stop,manouvre_1,manouvre_2],{'transfer orbit','departure orbit','arrival orbit','start position for the departure orbit', ...
-    'start position for the arrival orbit','first maneouvre point','second maneouvre point'})
+legend([transf_orbit,departure_orbit,arrival_orbit,StartRad_DepOrbit,StartRad_ArrOrbit,RadMan_1,RadMan_2,Man2Rad_DepOrbit,Man1Rad_ArrOrbit],{'transfer orbit','departure orbit','arrival orbit',...
+    'start position for the departure orbit','start position for the arrival orbit','first maneouvre point','second maneouvre point','position of pl_1 @second maneouvre time','position of pl_2 @first maneouvre time'})
 
+I = imread('sun.png'); 
+Sun_radius = astroConstants(3);
+[x_sun, y_sun, z_sun] = ellipsoid (0,0,0,Sun_radius,Sun_radius,Sun_radius);
+Sun = surf(50*x_sun, 50*y_sun, 50*z_sun,'Edgecolor', 'none');
+set(Sun,'FaceColor','texturemap','Cdata',I)
+% set(gca,'Color','none','visible','off')
+axis equal
 
 hold off
 

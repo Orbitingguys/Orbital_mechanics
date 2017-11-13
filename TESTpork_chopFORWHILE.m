@@ -18,7 +18,7 @@ orbital_parameters_2.INCLI = 0;
 
 TimeOption.TypeMission = 4;
 
-[Local_min_D_v,Total_min_D_v,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi);
+[printed_value,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi);
 
 
 
@@ -48,5 +48,5 @@ TimeOption.t_f_min=150*24*3600;
 TimeOption.t_f_max=400*24*3600;
 TimeOption.TypeMission = 1;
 
-[Local_min_D_v,Total_min_D_v,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi);
+[printed_value,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi);
 
