@@ -1,6 +1,4 @@
-function [printed_value,ERROR] = pork_chopFORWHILEedit2(orbital_parameters_1,orbital_parameters_2,TimeOption,mi,T0)
-
-
+function [printed_value,ERROR] = pork_chopPARPOLFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi,T0,m,n)
 
 % TimeOption     .TypeMission:      -   if .TypeMission is 1 it means that you have a window of
 %                                       launch so you need to define .t_i_max and also you have a
@@ -39,7 +37,7 @@ T_1 = 2*pi*sqrt(a_1^3/mi);       % period of the first orbit
 T_2 = 2*pi*sqrt(a_2^3/mi);       % period of the second orbit
 
 
-switch TimeOption.TypeMission
+switch TimeOption.TypeMission 
     
     
     case 1
@@ -71,8 +69,8 @@ end
  
 %% ODE SETS
 
-m = 200;                                                    % number of steps in which the departure time will be discretized
-n = 200;                                                    % number of steps in which the arrival time will be discretized
+% m = 200;                                                    % number of steps in which the departure time will be discretized
+% n = 200;                                                    % number of steps in which the arrival time will be discretized
 
 [r_geo_1_0,v_geo_1_0] = kep2geo (orbital_parameters_1,mi);
 [r_geo_2_0,v_geo_2_0] = kep2geo (orbital_parameters_2,mi);
@@ -145,42 +143,46 @@ end
 %In order to represent the dates in the axes we need to get their tau, for that we first get the
 %mjd2000 vector of times:
 
-mjd2000_d=(t_i+T0)./(3600*24);
-mjd2000_a=(t_f+T0)./(3600*24);
+mjd2000_d = (t_i+T0)./(3600*24);
+mjd2000_a = (t_f+T0)./(3600*24);
 
 %Now we can define the tau for each time of both vectors
+tau_d = zeros(length(mjd2000_d),1);
+tau_a = zeros(length(mjd2000_a),1);
 
-for i=1:length(mjd2000_d)
-    tau_d(i)=mjd20002tau(mjd2000_d(i));
+for i = 1:length(mjd2000_d)
+    tau_d(i) = mjd20002tau(mjd2000_d(i));
 end
 for j=1:length(mjd2000_a)
-    tau_a(j)=mjd20002tau(mjd2000_a(j));
+    tau_a(j) = mjd20002tau(mjd2000_a(j));
 end
 
-% 3D surface plot
+% 3D SURFACE PLOT
 
 figure                                      
 surf(tau_d,tau_a,D_v','EdgeColor','none');
-%Settings for surface 3D surface plot
+
+%Settings for surface plot
 title('Pork Chop Surface','FontSize',13)
 xlabel('Arrival time')
 ylabel('Departure time')
 zlabel('Delta_v')
-tickDeparture=linspace(tau_d(1),tau_d(end),20);
-tickArrival=linspace(tau_a(1),tau_a(end),20);
+tickDeparture = linspace(tau_d(1),tau_d(end),20);
+tickArrival = linspace(tau_a(1),tau_a(end),20);
 set(gca,'xtick',tickDeparture,'XTickLabelRotation',45);
 set(gca,'ytick',tickArrival,'YTickLabelRotation',45);
 datetick('x',1,'keepticks');
 datetick('y',1,'keepticks');
 
-% contour plot
+% CONTOUR PLOT
 
-[vt]=valuesTOF(mjd2000_d,mjd2000_a);
-mjd2000of=tof./(3600*24);
+[vt] = valuesTOF(mjd2000_d,mjd2000_a);
+mjd2000of = tof./(3600*24);
 figure                                      
-contour(tau_d,tau_a,D_v',m);
+contour(tau_d,tau_a,D_v',50);
 hold on
 contour(tau_d,tau_a,mjd2000of',vt,'LineColor','k','ShowText','on');
+
 %Settings for contour plot
 colorbar;
 caxis([0,100]);
@@ -192,7 +194,7 @@ set(gca,'ytick',tickArrival,'YTickLabelRotation',45);
 datetick('x',1,'keepticks');
 datetick('y',1,'keepticks');
 colorbar;
-
+hold off
 
 %% COMPUTING THE BEST DELTA_V
 % the aim of the for cycle is to run a while pork chop cycle inside around some local
@@ -200,8 +202,8 @@ colorbar;
 
 % pre-allocation of the memory
 
-Local_min_D_v = zeros(n,1);
 ERROR = zeros(100,n);
+Local_min_D_v = zeros(n,1);
 R_maneouvre_1 = zeros(3,n);
 R_maneouvre_2 = zeros(3,n);
 V_maneouvre_1 = zeros(3,n);
@@ -217,7 +219,9 @@ t_maneouvre_2 = zeros(1,n);
                   
 % in order to introduce the while cycle we need to see how the BCs change inside the for cycle
 
-for z = 1:n       % for cycle for every element of the minimum vector of the matrix (the last one computed)
+parfor_progress(n);
+parpool;
+parfor z = 1:n       % for cycle for every element of the minimum vector of the matrix (the last one computed)
 
     if h(z) > 3
         t_i_min = t_i(h(z)-3);   % BC for the domine of the ODE of the departure orbit
@@ -247,28 +251,31 @@ for z = 1:n       % for cycle for every element of the minimum vector of the mat
         t_f_max = t_f(end);
     end
    
-    [Local_min_D_v(z),R_maneouvre_1(:,z),R_maneouvre_2(:,z),V_maneouvre_1(:,z),V_maneouvre_2(:,z),v_transf_man_1(:,z),v_transf_man_2(:,z),t_maneouvre_1(z),t_maneouvre_2(z),err] = WHILE_CHOP(t_i_min,t_i_max,t_f_min,t_f_max,round(m/8),round(n/8),mi,X_1_0,X_2_0,options);
+    [Local_min_D_v(z),R_maneouvre_1(:,z),R_maneouvre_2(:,z),V_maneouvre_1(:,z),V_maneouvre_2(:,z),v_transf_man_1(:,z),v_transf_man_2(:,z),t_maneouvre_1(z),t_maneouvre_2(z),err] = WHILE_CHOP(t_i_min,t_i_max,t_f_min,t_f_max,round(m/20),round(n/20),mi,X_1_0,X_2_0,options);
     
-    ERROR(:,z) = err; % assembling the error matrix
+    ERROR(:,z) = err;            % assembling the error matrix
     
+    parfor_progress;
 end
+
+delete(gcp('nocreate'));
 
 [Total_min_D_v,f] = min(Local_min_D_v); % Computing the global minimum! the minimum position is the f-th
 
 [~,X_dep_t02Tman2] = ode113(@orbit_dynamics,linspace(0,t_maneouvre_2(f),10),X_0_departure,options,mi); % in order to obtain the position of the planet 1 @maneouvre time 2
 [~,X_arr_t02Tman1] = ode113(@orbit_dynamics,linspace(0,t_maneouvre_1(f),10),X_0_arrival,options,mi);   % in order to obtain the position of the planet 2 @maneouvre time 1
 
-%In order to transform the times of the maneuvers in date format ([yyyy mm dd hh mm ss]):
+% in order to transform the times of the maneuvers in date format ([yyyy mm dd hh mm ss]):
 
-mjd2000_man1=(t_maneouvre_1(f)+T0)./(3600*24);
-mjd2000_man2=(t_maneouvre_2(f)+T0)./(3600*24);
-days_of_flight=mjd2000_man2-mjd2000_man1;
+mjd2000_man1 = (t_maneouvre_1(f)+T0)./(3600*24);
+mjd2000_man2 = (t_maneouvre_2(f)+T0)./(3600*24);
+days_of_flight = mjd2000_man2-mjd2000_man1;
 
-Date_man1=mjd20002date(mjd2000_man1);
-Date_man2=mjd20002date(mjd2000_man2);
+Date_man1 = mjd20002date(mjd2000_man1);
+Date_man2 = mjd20002date(mjd2000_man2);
 
-Datestr_man1=datestr(Date_man1);
-Datestr_man2=datestr(Date_man2);
+Datestr_man1 = datestr(Date_man1);
+Datestr_man2 = datestr(Date_man2);
 
 %% PRINTING INTERESTING VALUES
 
@@ -373,7 +380,7 @@ title('Orbit Representation','FontSize',13)
 legend([transf_orbit,departure_orbit,arrival_orbit,StartRad_DepOrbit,StartRad_ArrOrbit,RadMan_1,RadMan_2,Man2Rad_DepOrbit,Man1Rad_ArrOrbit],{'transfer orbit','departure orbit','arrival orbit',...
     'start position for the departure orbit','start position for the arrival orbit','first maneouvre point','second maneouvre point','position of pl_1 @second maneouvre time','position of pl_2 @first maneouvre time'})
 
-I = imread('sun.png'); 
+I = imread('Sun.png'); 
 Sun_radius = astroConstants(3);
 [x_sun, y_sun, z_sun] = ellipsoid (0,0,0,Sun_radius,Sun_radius,Sun_radius);
 Sun = surf(20*x_sun, 20*y_sun, 20*z_sun,'Edgecolor', 'none');

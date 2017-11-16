@@ -1,6 +1,8 @@
+clear all;clc;close all
+warning('off')
 mi=1.32712440018E11 ;
-t_d=linspace(0,200*24*3600,100);
-t_a=linspace(150*24*3600,400*24*3600,100);
+t_d=linspace(0,200*24*3600,50);
+t_a=linspace(0,400*24*3600,50);
 orbital_parameters_1.ecc=1.730508176494217E-02;
 orbital_parameters_1.a=1.497209137830794E+08;
 orbital_parameters_1.RAAN=degtorad(1.613676165270718E+02);

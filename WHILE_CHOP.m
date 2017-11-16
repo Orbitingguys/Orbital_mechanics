@@ -113,4 +113,5 @@ R_maneouvre_2 = X_2(j,1:3);            % Radius of the second intersection for t
 V_maneouvre_2 = X_2(j,4:6);            % Velocity vector in the arrival orbit for the local minimum conditions at the last iteration
 t_maneouvre_1 = t_i(i(j));
 t_maneouvre_2 = t_f(j);
+
 end

@@ -80,5 +80,3 @@ D = floor(d+1);
 % Prepare output
 date = [Y, M, D, hrs, mn, sec];
 
-
-return

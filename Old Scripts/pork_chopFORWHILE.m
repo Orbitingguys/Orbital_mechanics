@@ -1,4 +1,4 @@
-function [printed_value,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi,T0,m,n)
+function [printed_value,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_parameters_2,TimeOption,mi)
 
 
 
@@ -15,15 +15,15 @@ function [printed_value,ERROR] = pork_chopFORWHILE(orbital_parameters_1,orbital_
 %
 %                                   -   if .TypeMission is 4 you haven't any time constrain;
 %   
-%                .t_i_max:          -   must be added for .TypeMission equal to 1 or 2           
+%                .t_i_max:          -   Must be added for .TypeMission equal to 1 or 2           
 %                                       for the other cases will be computed as the period of the
 %                                       first orbit
 %                                       
-%                .t_f_min, t_f_max: -   must be added for .TypeMission equal to 1 or 3           
+%                .t_f_min, t_f_max: -   Must be added for .TypeMission equal to 1 or 3           
 %                                       for the other cases will be computed as 3 times of the period 
 %                                       of the second orbit 
 %
-%                the initial time at the departure orbit is automatically
+%                The initial time at the departure orbit is automatically
 %                computed as zero
 %
 %                WHEN A TIME IS NOT NEEDED JUST DON'T ADD IT AS A DATA!                
@@ -51,7 +51,7 @@ switch TimeOption.TypeMission
     case 2
 
         t_i_max = TimeOption.t_i_max;
-        t_f_min = 0.001;                 % it's impossible to reach the second orbit in the very same time as the departure but impossible cases will neglected by the script
+        t_f_min = 0.001;                 % It's impossible to reach the second orbit in the very same time as the departure but impossible cases will neglected by the script
         t_f_max = 3*T_2;
         
     case 3
@@ -63,7 +63,7 @@ switch TimeOption.TypeMission
     case 4
        
         t_i_max = T_1;
-        t_f_min = 0.001;                 % it's impossible to reach the second orbit in the very same time as the departure but impossible cases will neglected by the script
+        t_f_min = 0.001;                 % It's impossible to reach the second orbit in the very same time as the departure but impossible cases will neglected by the script
         t_f_max = 3*T_2; 
        
 end
@@ -71,8 +71,8 @@ end
  
 %% ODE SETS
 
-% m = 200;                                                    % number of steps in which the departure time will be discretized
-% n = 200;                                                    % number of steps in which the arrival time will be discretized
+m = 200;                                                    % number of steps in which the departure time will be discretized
+n = 200;                                                    % number of steps in which the arrival time will be discretized
 
 [r_geo_1_0,v_geo_1_0] = kep2geo (orbital_parameters_1,mi);
 [r_geo_2_0,v_geo_2_0] = kep2geo (orbital_parameters_2,mi);
@@ -142,61 +142,23 @@ end
     
 %% PlOTS
 
-% in order to represent the dates in the axes we need to get their tau, for that we first get the
-% mjd2000 vector of times:
-
-mjd2000_d = (t_i+T0)./(3600*24);          % mjd2000 departure time vector, (t_i is the time vector outputted by the ODE) 
-mjd2000_a = (t_f+T0)./(3600*24);          % mjd2000 arrival time vector, (t_f is the time vector outputted by the ODE)
-
-tau_d = zeros(length(mjd2000_d),1);       % pre-allocation of the memory
-tau_a = zeros(length(mjd2000_a),1);       % pre-allocation of the memory
-
-for i = 1:length(mjd2000_d)
-    tau_d(i) = mjd20002tau(mjd2000_d(i)); % tau of departure
-end
-
-for j = 1:length(mjd2000_a)
-    tau_a(j) = mjd20002tau(mjd2000_a(j)); % tau of arrival
-end
-
-% 3D SURFACE PLOT
+% 3D surface plot
 
 figure                                      
-surf(tau_d,tau_a,D_v','EdgeColor','none');
-
-% settings for surface plot
+surf(t_f,t_i,D_v,'EdgeColor','none');
 title('Pork Chop Surface','FontSize',13)
-xlabel('Arrival time')
-ylabel('Departure time')
+xlabel('arrival time')
+ylabel('departure time')
 zlabel('Delta_v')
-tickDeparture = linspace(tau_d(1),tau_d(end),20);
-tickArrival = linspace(tau_a(1),tau_a(end),20);
-set(gca,'xtick',tickDeparture,'XTickLabelRotation',45);
-set(gca,'ytick',tickArrival,'YTickLabelRotation',45);
-datetick('x',1,'keepticks');
-datetick('y',1,'keepticks');
 
-% CONTOUR PLOT
+% contour plot
 
-[vt] = valuesTOF(mjd2000_d,mjd2000_a);
-mjd2000of = tof./(3600*24);
 figure                                      
-contour(tau_d,tau_a,D_v',m);
-hold on
-contour(tau_d,tau_a,mjd2000of',vt,'LineColor','k','ShowText','on');
-
-% settings for contour plot
-colorbar;
-caxis([0,100]);
+contour(t_i,t_f,D_v',m);
 title('Pork Chop Contour','FontSize',13)
-xlabel('Arrival time')
-ylabel('Departure time')
-set(gca,'xtick',tickDeparture,'XTickLabelRotation',45);
-set(gca,'ytick',tickArrival,'YTickLabelRotation',45);
-datetick('x',1,'keepticks');
-datetick('y',1,'keepticks');
-colorbar;
-hold off
+xlabel('arrival time')
+ylabel('departure time')
+
 
 %% COMPUTING THE BEST DELTA_V
 % the aim of the for cycle is to run a while pork chop cycle inside around some local
@@ -253,7 +215,7 @@ for z = 1:n       % for cycle for every element of the minimum vector of the mat
    
     [Local_min_D_v(z),R_maneouvre_1(:,z),R_maneouvre_2(:,z),V_maneouvre_1(:,z),V_maneouvre_2(:,z),v_transf_man_1(:,z),v_transf_man_2(:,z),t_maneouvre_1(z),t_maneouvre_2(z),err] = WHILE_CHOP(t_i_min,t_i_max,t_f_min,t_f_max,round(m/8),round(n/8),mi,X_1_0,X_2_0,options);
     
-    ERROR(:,z) = err;            % assembling the error matrix
+    ERROR(:,z) = err; % assembling the error matrix
     
 end
 
@@ -261,18 +223,6 @@ end
 
 [~,X_dep_t02Tman2] = ode113(@orbit_dynamics,linspace(0,t_maneouvre_2(f),10),X_0_departure,options,mi); % in order to obtain the position of the planet 1 @maneouvre time 2
 [~,X_arr_t02Tman1] = ode113(@orbit_dynamics,linspace(0,t_maneouvre_1(f),10),X_0_arrival,options,mi);   % in order to obtain the position of the planet 2 @maneouvre time 1
-
-% in order to transform the times of the maneuvers in date format ([yyyy mm dd hh mm ss]):
-
-mjd2000_man1 = (t_maneouvre_1(f)+T0)./(3600*24);
-mjd2000_man2 = (t_maneouvre_2(f)+T0)./(3600*24);
-days_of_flight = mjd2000_man2-mjd2000_man1;
-
-Date_man1 = mjd20002date(mjd2000_man1);
-Date_man2 = mjd20002date(mjd2000_man2);
-
-Datestr_man1 = datestr(Date_man1);
-Datestr_man2 = datestr(Date_man2);
 
 %% PRINTING INTERESTING VALUES
 
@@ -322,14 +272,7 @@ fprintf('TIME @first maneouvre point: \n\n')
 fprintf('t: %g [s] \n\n\n',t_maneouvre_1(f))
 fprintf('TIME @second maneouvre point: \n\n')
 fprintf('t: %g [s] \n\n\n',t_maneouvre_2(f))
-fprintf('DATE @first maneouvre point: \n\n')
-fprintf('%s \n\n\n',Datestr_man1)
-fprintf('DATE @second maneouvre point: \n\n')
-fprintf('%s \n\n\n',Datestr_man2)
-fprintf('DAYS OF FLIGHT for the Express Mission: \n\n')
-fprintf('~%g [days] \n\n\n',round(days_of_flight))
 
-%% SAVING THE VALUES WERE PRINTED 
 printed_value.best_Dv = Total_min_D_v;
 printed_value.StartRad_DepOrbit = [X_departure_orbit(1,1),X_departure_orbit(1,2),X_departure_orbit(1,3)];
 printed_value.StartRad_ArrOrbit = [X_arrival_orbit(1,1),X_arrival_orbit(1,2),X_arrival_orbit(1,3)];
@@ -343,8 +286,6 @@ printed_value.VelArrOrbit_Man_2 = [V_maneouvre_2(1,f),V_maneouvre_2(2,f),V_maneo
 printed_value.VelTransfOrbit_Man_2 = [v_transf_man_2(1,f),v_transf_man_2(3,f),v_transf_man_2(3,f)];
 printed_value.Time_Man_1 = t_maneouvre_1(f);
 printed_value.Time_Man_2 = t_maneouvre_2(f);
-printed_value.Date_Man_1 = Date_man1;
-printed_value.Date_Man_2 = Date_man2;
 
 %% ORBIT REPRESENTATION (geo coordinate plot)
 
@@ -377,11 +318,10 @@ title('Orbit Representation','FontSize',13)
 legend([transf_orbit,departure_orbit,arrival_orbit,StartRad_DepOrbit,StartRad_ArrOrbit,RadMan_1,RadMan_2,Man2Rad_DepOrbit,Man1Rad_ArrOrbit],{'transfer orbit','departure orbit','arrival orbit',...
     'start position for the departure orbit','start position for the arrival orbit','first maneouvre point','second maneouvre point','position of pl_1 @second maneouvre time','position of pl_2 @first maneouvre time'})
 
-% adding the sun 
-I = imread('Sun.png'); 
+I = imread('sun.png'); 
 Sun_radius = astroConstants(3);
 [x_sun, y_sun, z_sun] = ellipsoid (0,0,0,Sun_radius,Sun_radius,Sun_radius);
-Sun = surf(20*x_sun, 20*y_sun, 20*z_sun,'Edgecolor', 'none');
+Sun = surf(50*x_sun, 50*y_sun, 50*z_sun,'Edgecolor', 'none');
 set(Sun,'FaceColor','texturemap','Cdata',I)
 % set(gca,'Color','none','visible','off')
 axis equal
@@ -389,5 +329,5 @@ axis equal
 hold off
 
 
-elapsed_time = toc;  % global computational time
+elapsed_time = toc;  
 fprintf('ELAPSED TIME: %g [s]\n\n\n',elapsed_time)

@@ -1,4 +1,8 @@
-function [target,v_inf,DateOption]=body_time_data(jbody)
+function [target,v_inf,DateOption] = body_time_data(ibody,jbody)
+
+if ibody == jbody
+    error('departure and arrival planets must be different')
+end
 
 target_planets = {'mercury' 'venus' 'jupiter' 'saturn' 'uranus' 'neptune'};
 
@@ -94,22 +98,30 @@ date_d_max(:,positions) = date_d_max(:,1:37);
 date_a_min(:,positions) = date_a_min(:,1:37);
 date_a_max(:,positions) = date_a_max(:,1:37);
 
-for i = 1:41
+for i = 1:41  
 date_d_min(1:6,not_positions(i)) = zeros(6,1);
 date_d_max(1:6,not_positions(i)) = zeros(6,1);
 date_a_min(1:6,not_positions(i)) = zeros(6,1);
 date_a_max(1:6,not_positions(i)) = zeros(6,1);
 end
 
+target(3)= {'earth'};
+target(4)= {'mars'};
+date_d_min(1:6,4) = [2003; 4; 1; 12; 0; 0 ];
+date_d_max(1:6,4) = [2003; 8; 1; 12; 0; 0 ];
+date_a_min(1:6,4) = [2003; 9; 1; 12; 0; 0 ];
+date_a_max(1:6,4) = [2004; 3; 1; 12; 0; 0 ];
+
 %% Chosen body data
 
-target = target(jbody);
-v_inf = v_inf(jbody);
+DateOption.target_i = target(ibody);
+DateOption.target_j = target(jbody);
+DateOption.v_inf = v_inf(jbody);
 DateOption.date_d_min = date_d_min(:,jbody)';
 DateOption.date_d_max = date_d_max(:,jbody)';
 DateOption.date_a_min = date_a_min(:,jbody)';
 DateOption.date_a_max = date_a_max(:,jbody)';
-DateOption.TypeMission = 1; %The function defines all limits for dates
+DateOption.TypeMission = 1;                        %The function defines all limits for dates
 
 
 
