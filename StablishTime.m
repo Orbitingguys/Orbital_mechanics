@@ -32,11 +32,9 @@ function [TimeOption] = StablishTime(DateOption)
 TimeOption.TypeMission = DateOption.TypeMission;
 date_d_min = DateOption.date_d_min; 
 
-% we define date0 as a date of reference in order to calculate the increments of time.
-date0 = date_d_min;
+date0 = date_d_min;                         % the date of reference neded to compute the increments of time.
 
-% mjd2000 of date0
-TimeOption.mjd2000_0 = date2mjd2000(date0);
+TimeOption.mjd2000_0 = date2mjd2000(date0); % mjd2000 of date0
 mjd2000_0 = TimeOption.mjd2000_0;
 
 switch TimeOption.TypeMission

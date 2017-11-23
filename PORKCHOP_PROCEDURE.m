@@ -24,19 +24,17 @@ function [printed_value,ERROR] = PORKCHOP_PROCEDURE(DateSetup)
 %                   REMEMBER TO ADD TO MATLAB PATH THE FOLDER 'TimeConversion'  
 
 %%
-
-warning('off');
 G = 6.67259e-20;
 msun = 1.988919445342813e+030;
 mi = msun*G;
-
-ibody = DateSetup.ibody;
-jbody = DateSetup.jbody;
+% 
+% ibody = DateSetup.ibody;
+% jbody = DateSetup.jbody;
 [DateOption] = DateSelection(DateSetup);
 T0 = date2mjd2000(DateOption.date_d_min)*3600*24;
 [TimeOption] = StablishTime(DateOption);
-[orbital_parameters_1] = OrbitalParameters(TimeOption.mjd2000_0,ibody);
-[orbital_parameters_2] = OrbitalParameters(TimeOption.mjd2000_0,jbody);
+[orbital_parameters_1] = OrbitalParameters(TimeOption.mjd2000_0,DateSetup.ibody);
+[orbital_parameters_2] = OrbitalParameters(TimeOption.mjd2000_0,DateSetup.jbody);
 m = round((TimeOption.t_i_max)/86400);
 n = round((TimeOption.t_f_max-TimeOption.t_f_min)/86400);
 

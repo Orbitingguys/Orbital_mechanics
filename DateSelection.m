@@ -22,10 +22,12 @@ switch DateSetup.default
     
     case 1
         
-        [~,~,DateOption] = body_time_data(DateSetup.ibody,DateSetup.jbody);
+        [DateOption] = body_time_data(DateSetup);
+        DateOption.TypeMission = DateSetup.TypeMission;
         
     case 0
         
+        [DateOption] = body_time_data(DateSetup);
         DateOption.TypeMission = DateSetup.TypeMission;
         DateOption.date_d_min = DateSetup.date_d_min;
         
@@ -33,7 +35,7 @@ switch DateSetup.default
     
     
             case 1
-        
+                
                 DateOption.date_d_max = DateSetup.date_d_max;
                 DateOption.date_a_min = DateSetup.date_a_min;
                 DateOption.date_a_max = DateSetup.date_a_max;

@@ -89,18 +89,20 @@ switch TimeOption.TypeMission
     
     case 1
         
+        if t_f_min ~= 0
         [~,X_2] = ode113(@orbit_dynamics,[0 t_f_min],X_2_0,options,mi); % integration needed in order to obtain the radius of the condition related to t_f_min in the arrival orbit
         X_2_0 = X_2(end,:);                                             % radius and velocity at the time t_f_min @ the arrival orbit
-    
+        end
     case 2
         
                                                                         % start conditions are fine as saved before   
         
     case 3
         
+        if t_f_min ~= 0
         [~,X_2] = ode113(@orbit_dynamics,[0 t_f_min],X_2_0,options,mi); % integration needed in order to obtain the radius of the condition related to t_f_min in the arrival orbit
         X_2_0 = X_2(end,:);                                             % radius and velocity at the time t_f_min @ the arrival orbit
-        
+        end
     case 4
         
                                                                         % start conditions are fine as saved before
@@ -259,7 +261,6 @@ parfor z = 1:n       % for cycle for every element of the minimum vector of the 
 end
 
 delete(gcp('nocreate'));
-
 [Total_min_D_v,f] = min(Local_min_D_v); % Computing the global minimum! the minimum position is the f-th
 
 [~,X_dep_t02Tman2] = ode113(@orbit_dynamics,linspace(0,t_maneouvre_2(f),10),X_0_departure,options,mi); % in order to obtain the position of the planet 1 @maneouvre time 2
