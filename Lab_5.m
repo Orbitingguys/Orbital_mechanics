@@ -35,37 +35,58 @@ delta_v = v_p_out-v_p_inc;
 theta_inf_inc = acos(-1/e_inc);
 
 if sin(theta_inf_inc) ~= sqrt((e_inc^2 - 1)/e_inc)
-    theta_inf_inc = - theta_inf_inc;
+    theta_inf_inc = 2*pi - theta_inf_inc;
 end
 
-theta_inc = linspace(-theta_inf_inc,0,10000);
-r_inc = zeros(length(theta_inc),1);
-r_inc_vect = zeros(length(theta_inc),2);
+orbital_parameters.a = a_inc;
+orbital_parameters.ecc = e_inc;
+orbital_parameters.RAAN = 0;
+orbital_parameters.PA = 0;
+orbital_parameters.INCLI = 0;
+orbital_parameters.theta_inf = theta_inf_inc;
+orbital_parameters.incoming = true;
+[~,r_inc_vect,~] = hyp_orbit(orbital_parameters,mi_earth);
 
-for i = 1:length(theta_inc)
-    
-r_inc(i) = a_inc*(1-e_inc^2)./(1+e_inc.*cos(theta_inc(i)));
-r_inc_vect(i,:) = [r_inc(i)*cos(theta_inc(i)) r_inc(i)*sin(theta_inc(i))];
-
-end
-plot(r_inc_vect(2:end,1),r_inc_vect(2:end,2),'k')
+% theta_inc = linspace(-theta_inf_inc,0,10000);
+% r_inc = zeros(length(theta_inc),1);
+% r_inc_vect = zeros(length(theta_inc),2);
+% 
+% for i = 1:length(theta_inc)
+%     
+% r_inc(i) = a_inc*(1-e_inc^2)./(1+e_inc.*cos(theta_inc(i)));
+% r_inc_vect(i,:) = [r_inc(i)*cos(theta_inc(i)) r_inc(i)*sin(theta_inc(i))];
+% 
+% end
+plot(r_inc_vect(1,8000:end),r_inc_vect(2,8000:end),'k')
 hold on
 theta_inf_out = acos(-1/e_out);
+
 if sin(theta_inf_out) ~= sqrt((e_out^2 - 1)/e_out)
-    theta_inf_out = - theta_inf_out;
+    theta_inf_out = 2*pi - theta_inf_out;
 end
 
-theta_out = linspace(0,theta_inf_out,10000);
-r_out = zeros(length(theta_out),1);
-r_out_vect = zeros(length(theta_out),2);
 
-for i = 1:length(theta_out)
-    
-r_out(i) = a_out*(1-e_out^2)/(1+e_out*cos(theta_out(i)));
-r_out_vect(i,:) = [r_out(i)*cos(theta_out(i)) r_out(i)*sin(theta_out(i))];
+orbital_parameters.a = a_out;
+orbital_parameters.ecc = e_out;
+orbital_parameters.RAAN = 0;
+orbital_parameters.PA = 0;
+orbital_parameters.INCLI = 0;
+orbital_parameters.theta_inf = theta_inf_out;
+orbital_parameters.incoming = false;
+[~,r_out_vect,~] = hyp_orbit(orbital_parameters,mi_earth);
 
-end
-plot(r_out_vect(1:9999,1),r_out_vect(1:9999,2),'y')
+
+% theta_out = linspace(0,theta_inf_out,10000);
+% r_out = zeros(length(theta_out),1);
+% r_out_vect = zeros(length(theta_out),2);
+% 
+% for i = 1:length(theta_out)
+%     
+% r_out(i) = a_out*(1-e_out^2)/(1+e_out*cos(theta_out(i)));
+% r_out_vect(i,:) = [r_out(i)*cos(theta_out(i)) r_out(i)*sin(theta_out(i))];
+% 
+% end
+plot(r_out_vect(1,1:2000),r_out_vect(2,1:2000),'y')
 
 
 
