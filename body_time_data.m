@@ -126,9 +126,12 @@ switch DateSetup.default
         DateOption.date_d_max = date_d_max(:,DateSetup.jbody)';
         DateOption.date_a_min = date_a_min(:,DateSetup.jbody)';
         DateOption.date_a_max = date_a_max(:,DateSetup.jbody)';
+        DateOption.TypeMission = 1;
         
     case 0
        
+        DateOption.TypeMission = DateSetup.TypeMission;
+        
 end
 
 

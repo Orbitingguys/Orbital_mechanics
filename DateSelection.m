@@ -23,7 +23,6 @@ switch DateSetup.default
     case 1
         
         [DateOption] = body_time_data(DateSetup);
-        DateOption.TypeMission = DateSetup.TypeMission;
         
     case 0
         

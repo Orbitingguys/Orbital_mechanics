@@ -38,9 +38,9 @@ T0 = date2mjd2000(DateOption.date_d_min)*3600*24;
 m = round((TimeOption.t_i_max)/86400);
 n = round((TimeOption.t_f_max-TimeOption.t_f_min)/86400);
 
-fprintf('Mission from %s',char(DateOption.target_i))
-fprintf(' to %s',char(DateOption.target_j))
-fprintf(' is being analyzed \n\n')
+fprintf('Mission from %s to %s is being analyzed \n\n',char(DateOption.target_i),char(DateOption.target_j))
+% fprintf(' to %s',char(DateOption.target_j))
+%fprintf(' is being analyzed \n\n')
 
 if m+n < 600
     
