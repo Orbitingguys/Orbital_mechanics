@@ -63,7 +63,7 @@ end
 
 if orbital_parameters.incoming == 1;
     
-    theta = linspace(-theta_inf,0,10000);
+    theta = linspace(theta_inf,0,10000);
     
 else
     
