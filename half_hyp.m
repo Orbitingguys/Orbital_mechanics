@@ -34,12 +34,12 @@ a_park = orbital_parameters_park.a;
 ecc_park = orbital_parameters_park.ecc;
 RAAN_park = orbital_parameters_park.RAAN;
 INCLI_park = orbital_parameters_park.INCLI;
-theta_start_park = orbital_parameters_park.theta;
-p_park = a_park*(1-ecc_park^2);
+
 
 if option == 1
+    
     v_i_out = v_i_inc_or_out;
-    r_p = p_park/(1+ecc_park*cos(theta_start_park));
+    r_p = a_park;
     v_f_out = v_f_out_or_inc;
     v_inf_plus = v_f_out - V_body;
     a = -mi_body/(norm(v_inf_plus))^2;
@@ -58,7 +58,7 @@ if option == 1
 elseif option == 2
     v_i_inc = v_i_inc_or_out;
     v_f_inc = v_f_out_or_inc;
-    r_p = p_park/(1+ecc_park*cos(theta_start_park));
+    r_p = a_park;
     v_inf_minus = v_i_inc - V_body;
     a = -mi_body/(norm(v_inf_minus))^2;
     ecc = 1 + (r_p*(norm(v_inf_minus))^2)/mi_body;
