@@ -1,4 +1,4 @@
-function [orbital_parameters, delta_v] = half_hyp(v_i_inc_or_out, v_f_out_or_inc, R_body, V_body, mi_body, orbital_parameters_park, orbital_parameters_body, option)
+function [orbital_parameters, delta_v] = half_hyp(v_i_inc_or_out, v_f_out_or_inc, V_body, mi_body, orbital_parameters_park, option)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% half_hyp.m %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%               
@@ -25,27 +25,14 @@ function [orbital_parameters, delta_v] = half_hyp(v_i_inc_or_out, v_f_out_or_inc
 %                                                                                                                    %       
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-G = 6.67259e-20;
-msun = 1.988919445342813e+030;
-mi_sun = msun*G;
-
 % r_vers = -R_body/norm(R_body);   % directed towards the Sun
 % t_vers = V_body/norm(V_body);
 % k_vers = cross(-r_vers,t_vers)/norm(cross(-r_vers,t_vers));
 % theta_vers = cross(-r_vers,k_vers);
 
-a_body = orbital_parameters_body.a;
-ecc_body = orbital_parameters_body.ecc;
-RAAN_body = orbital_parameters_body.RAAN;
-PA_body = orbital_parameters_body.PA;
-INCLI_body = orbital_parameters_body.INCLI;
-theta_body = orbital_parameters_body.theta;
-p_body = a_body*(1-ecc_body^2);
-
 a_park = orbital_parameters_park.a;
 ecc_park = orbital_parameters_park.ecc;
 RAAN_park = orbital_parameters_park.RAAN;
-PA_park = orbital_parameters_park.PA;
 INCLI_park = orbital_parameters_park.INCLI;
 theta_start_park = orbital_parameters_park.theta;
 p_park = a_park*(1-ecc_park^2);
@@ -58,6 +45,13 @@ if option == 1
     a = -mi_body/(norm(v_inf_plus))^2;
     ecc = 1 + (r_p*(norm(v_inf_plus))^2)/mi_body;
     theta_inf = atan2(-1/ecc,sqrt(ecc^2-1)/ecc);    % from -pi to pi
+    RAAN = RAAN_park;
+    INCLI = INCLI_park;
+    N = [sin(RAAN); cos(RAAN); 0];
+    phi = pi - acos(dot(v_inf_plus,N)/norm(v_inf_plus));
+    PA = theta_inf - phi;
+    v_p = sqrt(mi_body/(a*(1-ecc^2)))*(1+ecc);
+    delta_v = v_p - norm(v_i_out);
     orbital_parameters.incoming = false;
     
     
@@ -69,14 +63,19 @@ elseif option == 2
     a = -mi_body/(norm(v_inf_minus))^2;
     ecc = 1 + (r_p*(norm(v_inf_minus))^2)/mi_body;
     theta_inf = atan2(-1/ecc,sqrt(ecc^2-1)/ecc);
+    RAAN = RAAN_park;
+    INCLI = INCLI_park;
+    N = [sin(RAAN); cos(RAAN); 0];                          % line of Nodes
+    phi = pi - acos(dot(v_inf_minus,N)/norm(v_inf_minus));  % angle between v_inf_minus and N
+    PA = theta_inf - phi;                                   % pi - (pi - theta_inf) - phi from the triangle
+    v_p = sqrt(mi_body/(a*(1-ecc^2)))*(1+ecc);
+    delta_v = norm(v_f_inc) - v_p;
     orbital_parameters.incoming = true;
 end
 
 orbital_parameters.a = a;
 orbital_parameters.ecc = ecc;
-orbital_parameters.RAAN = 0;
-orbital_parameters.PA = 0;
-orbital_parameters.INCLI = 0;
+orbital_parameters.RAAN = RAAN;
+orbital_parameters.PA = PA;
+orbital_parameters.INCLI = INCLI;
 orbital_parameters.theta_inf = theta_inf;
-
-delta_v = 0;
