@@ -1,6 +1,6 @@
 function orbital_parameters = OrbitalParameters(mjd2000,body)
 
-if body<9
+if body < 9
     
     [kep,~] = uplanet(mjd2000,body);
     orbital_parameters.a = kep(1);

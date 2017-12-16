@@ -142,13 +142,13 @@ end
     
 %% PlOTS
 
-%In order to represent the dates in the axes we need to get their tau, for that we first get the
-%mjd2000 vector of times:
+% In order to represent the dates in the axes we need to get their tau, for that we first get the
+% mjd2000 vector of times:
 
 mjd2000_d = (t_i+T0)./(3600*24);
 mjd2000_a = (t_f+T0)./(3600*24);
 
-%Now we can define the tau for each time of both vectors
+% Now we can define the tau for each time of both vectors
 tau_d = zeros(length(mjd2000_d),1);
 tau_a = zeros(length(mjd2000_a),1);
 
@@ -164,7 +164,7 @@ end
 figure                                      
 surf(tau_d,tau_a,D_v','EdgeColor','none');
 
-%Settings for surface plot
+% Settings for surface plot
 title('Pork Chop Surface','FontSize',13)
 xlabel('Arrival time')
 ylabel('Departure time')
@@ -185,7 +185,7 @@ contour(tau_d,tau_a,D_v',50);
 hold on
 contour(tau_d,tau_a,mjd2000of',vt,'LineColor','k','ShowText','on');
 
-%Settings for contour plot
+% Settings for contour plot
 colorbar;
 caxis([0,100]);
 title('Pork Chop Contour','FontSize',13)

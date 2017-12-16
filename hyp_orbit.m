@@ -1,4 +1,4 @@
-function [r_body2sc,r_pf,r_helio,v_helio] = hyp_orbit(orbital_parameters,mi,R_sun2body)
+function [r_body2sc,r_pf] = hyp_orbit(orbital_parameters,mi)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% hyp_orbit.m %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                  
 %                                                                                                                %     
@@ -32,9 +32,9 @@ p = a*(1-ecc^2);
 
 switch nargin
     case 3
-        phi = atan2(R_sun2body(1),R_sun2body(2));
+%         phi = atan2(R_sun2body(1),R_sun2body(2));
     case 2 
-        phi = 0;
+%         phi = 0;
 end
 
 
@@ -61,7 +61,7 @@ end
 % end
 
 
-if orbital_parameters.incoming == 1;
+if orbital_parameters.incoming == 1
     
     theta = linspace(theta_inf,0,10000);
     
@@ -88,8 +88,8 @@ for i = 1:length(theta)
                  v_solidal(1,i)*sin(theta(i))+v_solidal(2,i)*cos(theta(i)); 
                  0                                                       ];
     v_body2sc(:,i) = R'*v_pf(:,i);                                            % velocity vector in the inertial frame of the body
-    r_helio(:,i) = norm(r_body2sc(:,i)).*[cos(phi); sin(phi); 0]; 
-    v_helio(:,i) = norm(v_body2sc(:,i)).*[cos(phi); sin(phi); 0];
+%     r_helio(:,i) = norm(r_body2sc(:,i)).*[cos(phi); sin(phi); 0]; 
+%     v_helio(:,i) = norm(v_body2sc(:,i)).*[cos(phi); sin(phi); 0];
     
 end
 

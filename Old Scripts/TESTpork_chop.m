@@ -20,7 +20,7 @@ a_2 = orbital_parameters_2.a;
 T_1 = 2*pi*sqrt(a_1^3/mi);    
 T_2 = 2*pi*sqrt(a_2^3/mi);
 
-[D_v,t_i,t_f,tof,min_D_v,i,j,X_1,X_2] = pork_chop(orbital_parameters_1,orbital_parameters_2,0.01,T_1,0.01,3*T_2,mi,200,200);
+[D_v,t_i,t_f,tof,min_D_v,i,j,X_1,X_2] = pork_chop(orbital_parameters_1,orbital_parameters_2,0.01,T_1,0.01,3*T_2,mi,100,200);
 
 
 

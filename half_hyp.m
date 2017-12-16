@@ -31,7 +31,7 @@ function [orbital_parameters, delta_v] = half_hyp(v_i_inc_or_out, v_f_out_or_inc
 % theta_vers = cross(-r_vers,k_vers);
 
 a_park = orbital_parameters_park.a;
-ecc_park = orbital_parameters_park.ecc;
+% ecc_park = orbital_parameters_park.ecc;
 RAAN_park = orbital_parameters_park.RAAN;
 INCLI_park = orbital_parameters_park.INCLI;
 

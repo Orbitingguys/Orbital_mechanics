@@ -1,21 +1,23 @@
 function [printed_value,ERROR] = PORKCHOP_PROCEDURE(DateSetup)
 %% INPUTS
-%                   -   ibody:      Body from the Solar System from which the mission departs
 %
-%                   -   jbody:      Body from the Solar System to which the mission arrives
 %
 %                   -   DateSetup:  Starting defining DateSetup.default
 %
-%                       .default:       -   If .default is 1 (True) the dates are directly taken
-%                                           from the data given for each body.
+%                                   .ibody:      Body from the Solar System from which the mission departs
 %
-%                                       -   If .default is 0 (False), DEPENDING ON
-%                                           DefaultOwn_Date.TypeMission, date must be defined by the
-%                                           varables:
-%                                                   .date_d_min:    First possible date for departure
-%                                                   .date_d_max:    Last possible date for departure
-%                                                   .date_a_min:    First possible date for arrival
-%                                                   .date_a_max:    Last possible date for arrival
+%                                   .jbody:      Body from the Solar System to which the mission arrives
+%
+%                                   .default:       -   If .default is 1 (True) the dates are directly taken
+%                                                       from the data given for each body.
+%
+%                                                   -   If .default is 0 (False), DEPENDING ON
+%                                                       DefaultOwn_Date.TypeMission, date must be defined by the
+%                                                       varables:
+%                                                                   .date_d_min:    First possible date for departure
+%                                                                   .date_d_max:    Last possible date for departure
+%                                                                   .date_a_min:    First possible date for arrival
+%                                                                   .date_a_max:    Last possible date for arrival
 %
 %
 %                                       FOR THE CASE DateSetup.default==1 NO MORE VARIABLES
@@ -27,9 +29,7 @@ function [printed_value,ERROR] = PORKCHOP_PROCEDURE(DateSetup)
 G = 6.67259e-20;
 msun = 1.988919445342813e+030;
 mi = msun*G;
-% 
-% ibody = DateSetup.ibody;
-% jbody = DateSetup.jbody;
+
 [DateOption] = DateSelection(DateSetup);
 T0 = date2mjd2000(DateOption.date_d_min)*3600*24;
 [TimeOption] = StablishTime(DateOption);
@@ -39,8 +39,6 @@ m = round((TimeOption.t_i_max)/86400);
 n = round((TimeOption.t_f_max-TimeOption.t_f_min)/86400);
 
 fprintf('Mission from %s to %s is being analyzed \n\n',char(DateOption.target_i),char(DateOption.target_j))
-% fprintf(' to %s',char(DateOption.target_j))
-%fprintf(' is being analyzed \n\n')
 
 if m+n < 600
     

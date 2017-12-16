@@ -50,8 +50,8 @@ X_transf_0 = [X_1(i(j),1:3),(v_transf_1(:,i(j),j))'];
 t_i_max = 2*pi*sqrt(orbital_parameters_1.a^3/mi);
 t_f_max = 2*pi*sqrt(orbital_parameters_2.a^3/mi);
 
-[t_i,X_1] = ode113(@orbit_dynamics,linspace(t_i_min,t_i_max,length_t_i),X_1_0,options,mi);
-[t_f,X_2] = ode113(@orbit_dynamics,linspace(t_f_min,t_f_max,length_t_f),X_2_0,options,mi);
+[~,X_1] = ode113(@orbit_dynamics,linspace(t_i_min,t_i_max,length_t_i),X_1_0,options,mi);
+[~,X_2] = ode113(@orbit_dynamics,linspace(t_f_min,t_f_max,length_t_f),X_2_0,options,mi);
 
 figure
 hold on
